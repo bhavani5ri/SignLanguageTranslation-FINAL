@@ -1,0 +1,32 @@
+{
+  "folders": [
+    {
+      "name": "Backend (Node.js Server)",
+      "path": "sign-language-backend"
+    },
+    {
+      "name": "Frontend (Website)",
+      "path": "sign-language-frontend"
+    }
+  ],
+  "settings": {
+    "liveServer.settings.port": 5500,
+    "liveServer.settings.root": "/sign-language-frontend",
+    "liveServer.settings.CustomBrowser": "chrome",
+    "liveServer.settings.donotShowInfoMsg": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.exclude": {
+      "**/node_modules": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ritwickdey.LiveServer",
+      "humao.rest-client",
+      "esbenp.prettier-vscode",
+      "mongodb.mongodb-vscode",
+      "dbaeumer.vscode-eslint"
+    ]
+  }
+}

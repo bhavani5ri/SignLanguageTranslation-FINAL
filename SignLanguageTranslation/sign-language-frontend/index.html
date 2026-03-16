@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SignBridge — Real-Time Sign Language Translation</title>
+  <style>
+/* ============================================================
+   SignBridge — Main Stylesheet
+   Dark industrial-tech aesthetic with teal/cyan accents
+   ============================================================ */
+
+:root {
+  --bg:         #0a0d12;
+  --bg-2:       #0f1419;
+  --bg-3:       #151c24;
+  --border:     rgba(255,255,255,0.07);
+  --border-2:   rgba(99,220,200,0.2);
+  --text:       #e8edf2;
+  --text-muted: #7a8a99;
+  --accent:     #3dd6c0;
+  --accent-2:   #1ab8a0;
+  --accent-glow:rgba(61,214,192,0.25);
+  --red:        #ff5f5f;
+  --yellow:     #ffd166;
+  --green:      #3dd6c0;
+  --radius:     12px;
+  --radius-lg:  20px;
+  --shadow:     0 8px 32px rgba(0,0,0,0.5);
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --transition:  all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+
+/* ── NAV ────────────────────────────────────────────────── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; gap: 2rem;
+  padding: 1rem 2.5rem;
+  background: rgba(10,13,18,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+.nav__logo {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-display); font-size: 1.25rem; font-weight: 800;
+  color: var(--text); text-decoration: none; margin-right: auto;
+}
+.nav__logo-icon { font-size: 1.4rem; }
+.nav__links { display: flex; gap: 0.25rem; }
+.nav__link {
+  padding: 0.4rem 1rem; border-radius: 8px;
+  color: var(--text-muted); text-decoration: none; font-size: 0.9rem;
+  transition: var(--transition);
+}
+.nav__link:hover, .nav__link.active { color: var(--text); background: var(--bg-3); }
+.nav__auth, .nav__user { display: flex; align-items: center; gap: 0.75rem; }
+.nav__username {
+  font-size: 0.875rem; color: var(--accent);
+  background: rgba(61,214,192,0.1); padding: 0.25rem 0.75rem;
+  border-radius: 20px; border: 1px solid var(--border-2);
+}
+
+/* ── BUTTONS ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1.4rem; border-radius: 8px;
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+  border: none; cursor: pointer; text-decoration: none;
+  transition: var(--transition); white-space: nowrap;
+}
+.btn--primary {
+  background: var(--accent); color: var(--bg);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.btn--primary:hover { background: var(--accent-2); transform: translateY(-1px); box-shadow: 0 0 30px var(--accent-glow); }
+.btn--ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn--ghost:hover { background: var(--bg-3); color: var(--text); }
+.btn--outline { background: transparent; color: var(--accent); border: 1px solid var(--border-2); }
+.btn--outline:hover { background: rgba(61,214,192,0.08); }
+.btn--lg { padding: 0.85rem 2rem; font-size: 1rem; border-radius: 10px; }
+.btn--sm { padding: 0.35rem 0.8rem; font-size: 0.8rem; }
+.btn--full { width: 100%; justify-content: center; padding: 0.85rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* ── HERO ───────────────────────────────────────────────── */
+.hero {
+  position: relative; min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 8rem 2.5rem 4rem;
+  gap: 4rem; overflow: hidden;
+}
+
+.hero__bg {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+}
+.hero__orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); opacity: 0.35;
+}
+.hero__orb--1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #1a7a6e, transparent);
+  top: -100px; right: 15%;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.hero__orb--2 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #0a4a8a, transparent);
+  bottom: 10%; left: 5%;
+  animation: orbFloat 11s ease-in-out infinite reverse;
+}
+.hero__orb--3 {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, #3dd6c0, transparent);
+  top: 40%; right: 5%;
+  animation: orbFloat 7s ease-in-out infinite 2s;
+}
+.hero__grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 80%);
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+.hero__content {
+  position: relative; z-index: 1; flex: 1; max-width: 600px;
+  animation: fadeInUp 0.8s ease both;
+}
+.hero__badge {
+  display: inline-block; padding: 0.35rem 1rem;
+  background: rgba(61,214,192,0.1); color: var(--accent);
+  border: 1px solid var(--border-2); border-radius: 20px;
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; margin-bottom: 1.5rem;
+}
+.hero__title {
+  font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;
+  margin-bottom: 1.5rem; color: var(--text);
+}
+.hero__title-accent {
+  background: linear-gradient(135deg, var(--accent), #7ef7e8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero__sub { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2.5rem; max-width: 480px; }
+.hero__cta { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+.hero__stats { display: flex; align-items: center; gap: 2rem; }
+.hero__stat { display: flex; flex-direction: column; }
+.hero__stat-num { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+.hero__stat-label { font-size: 0.75rem; color: var(--text-muted); }
+.hero__stat-divider { width: 1px; height: 40px; background: var(--border); }
+
+.hero__visual {
+  position: relative; z-index: 1; flex: 0 0 380px;
+  animation: fadeInUp 0.8s ease 0.2s both;
+}
+.hero__card {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow), 0 0 40px rgba(61,214,192,0.08);
+}
+.hero__card-header {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-3);
+}
+.hero__card-dot {
+  width: 11px; height: 11px; border-radius: 50%;
+}
+.hero__card-dot--red { background: var(--red); }
+.hero__card-dot--yellow { background: var(--yellow); }
+.hero__card-dot--green { background: var(--green); }
+.hero__card-label {
+  margin-left: auto; font-size: 0.75rem; color: var(--text-muted);
+  font-family: 'Courier New', monospace;
+}
+.hero__card-video {
+  height: 220px; background: #060911; position: relative; overflow: hidden;
+}
+.hero__card-video-inner {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #060911 0%, #0a1520 100%);
+}
+.hero__hand-icon { font-size: 5rem; z-index: 1; animation: handWave 2s ease-in-out infinite; }
+@keyframes handWave {
+  0%, 100% { transform: rotate(-5deg) scale(1); }
+  50% { transform: rotate(5deg) scale(1.05); }
+}
+.hero__scan-line {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scanLine 2s linear infinite;
+  box-shadow: 0 0 10px var(--accent);
+}
+@keyframes scanLine {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+.hero__detection-box {
+  position: absolute; width: 120px; height: 140px;
+  border: 2px solid var(--accent); border-radius: 4px;
+  animation: detectionPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+@keyframes detectionPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+.hero__card-output {
+  padding: 1rem 1.25rem; display: flex; gap: 0.75rem; align-items: flex-start;
+  border-bottom: 1px solid var(--border);
+}
+.hero__card-output-label { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; padding-top: 2px; }
+.hero__card-output-text {
+  font-family: var(--font-display); font-size: 1rem; font-weight: 600;
+  color: var(--accent);
+}
+.hero__card-lang {
+  padding: 0.85rem 1.25rem; display: flex; align-items: center; gap: 1rem;
+}
+.hero__lang-pill {
+  background: rgba(61,214,192,0.15); color: var(--accent);
+  border: 1px solid var(--border-2); padding: 0.2rem 0.75rem;
+  border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+}
+.hero__confidence { font-size: 0.8rem; color: var(--text-muted); margin-left: auto; }
+
+/* ── TRANSLATE SECTION ──────────────────────────────────── */
+.translate {
+  padding: 5rem 2.5rem;
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+}
+.translate__container { max-width: 1100px; margin: 0 auto; }
+.translate__header { text-align: center; margin-bottom: 3rem; }
+.translate__title {
+  font-family: var(--font-display); font-size: 2.2rem; font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+.translate__sub { color: var(--text-muted); }
+
+.translate__panel {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+}
+.translate__input-panel,
+.translate__output-panel {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.75rem;
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+.translate__panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+.translate__panel-title {
+  font-family: var(--font-display); font-size: 0.95rem; font-weight: 700;
+  color: var(--text); letter-spacing: 0.02em;
+}
+.translate__lang-select { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); }
+.translate__select {
+  background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+  padding: 0.4rem 0.75rem; border-radius: 6px; font-family: var(--font-body);
+  font-size: 0.85rem; cursor: pointer; outline: none;
+}
+.translate__select:focus { border-color: var(--accent); }
+
+.translate__camera-area {
+  flex: 1; min-height: 200px; background: var(--bg);
+  border: 1px dashed var(--border); border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+}
+.translate__camera-placeholder { text-align: center; color: var(--text-muted); }
+.translate__camera-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.translate__camera-sub { font-size: 0.8rem; margin-top: 0.4rem; }
+
+.translate__confidence-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  font-size: 0.85rem; color: var(--text-muted);
+}
+.translate__slider {
+  flex: 1; -webkit-appearance: none; height: 4px;
+  background: var(--border); border-radius: 2px; outline: none;
+  cursor: pointer;
+}
+.translate__slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px;
+  background: var(--accent); border-radius: 50%; cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.translate__textarea {
+  flex: 1; min-height: 200px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text); font-family: var(--font-body);
+  font-size: 1rem; padding: 1rem; resize: vertical; outline: none;
+  transition: border-color 0.2s;
+}
+.translate__textarea:focus { border-color: var(--accent); }
+.translate__textarea::placeholder { color: var(--text-muted); }
+
+.translate__actions { display: flex; gap: 1rem; }
+.translate__save-btn { flex: 1; justify-content: center; }
+
+.translate__alert {
+  padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem;
+  display: none;
+}
+.translate__alert.success { display: block; background: rgba(61,214,192,0.1); color: var(--accent); border: 1px solid var(--border-2); }
+.translate__alert.error { display: block; background: rgba(255,95,95,0.1); color: var(--red); border: 1px solid rgba(255,95,95,0.3); }
+
+/* ── HISTORY SECTION ────────────────────────────────────── */
+.history {
+  padding: 5rem 2.5rem;
+  border-top: 1px solid var(--border);
+}
+.history__container { max-width: 900px; margin: 0 auto; }
+.history__header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2.5rem; gap: 1rem; flex-wrap: wrap;
+}
+.history__title {
+  font-family: var(--font-display); font-size: 2rem; font-weight: 800;
+}
+.history__filters { display: flex; gap: 0.75rem; align-items: center; }
+
+.history__login-prompt {
+  text-align: center; padding: 4rem 2rem;
+  background: var(--bg-2); border: 1px dashed var(--border);
+  border-radius: var(--radius-lg); color: var(--text-muted);
+}
+.history__lock-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.history__login-prompt p { margin-bottom: 1.5rem; }
+
+.history__list { display: flex; flex-direction: column; gap: 1rem; }
+
+.history__item {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem 1.5rem;
+  display: flex; align-items: flex-start; gap: 1rem;
+  transition: var(--transition);
+  animation: fadeInUp 0.3s ease both;
+}
+.history__item:hover { border-color: var(--border-2); background: var(--bg-3); }
+
+.history__item-icon {
+  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(61,214,192,0.1); border: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+.history__item-body { flex: 1; min-width: 0; }
+.history__item-text {
+  font-size: 0.95rem; color: var(--text); margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+.history__item-meta { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.history__item-lang {
+  background: rgba(61,214,192,0.12); color: var(--accent);
+  border: 1px solid var(--border-2); padding: 0.15rem 0.6rem;
+  border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+}
+.history__item-time { font-size: 0.78rem; color: var(--text-muted); }
+.history__item-confidence { font-size: 0.78rem; color: var(--text-muted); }
+
+.history__item-actions { display: flex; gap: 0.5rem; align-items: center; }
+.history__delete-btn {
+  background: none; border: 1px solid transparent; color: var(--text-muted);
+  padding: 0.3rem 0.5rem; border-radius: 6px; cursor: pointer;
+  font-size: 0.8rem; transition: var(--transition);
+}
+.history__delete-btn:hover { color: var(--red); border-color: rgba(255,95,95,0.3); background: rgba(255,95,95,0.07); }
+
+.history__empty {
+  text-align: center; padding: 4rem; color: var(--text-muted);
+}
+.history__empty span { font-size: 2.5rem; display: block; margin-bottom: 1rem; }
+
+.history__pagination {
+  display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;
+  flex-wrap: wrap;
+}
+.history__page-btn {
+  background: var(--bg-2); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer;
+  font-size: 0.85rem; transition: var(--transition);
+}
+.history__page-btn:hover, .history__page-btn.active {
+  background: var(--bg-3); color: var(--accent); border-color: var(--border-2);
+}
+
+/* ── MODAL ──────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2.5rem;
+  width: 100%; max-width: 420px; position: relative;
+  box-shadow: var(--shadow), 0 0 50px rgba(0,0,0,0.5);
+  transform: translateY(20px); transition: transform 0.25s;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal__close {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; font-size: 1rem; padding: 0.25rem;
+  transition: var(--transition);
+}
+.modal__close:hover { color: var(--text); }
+.modal__header { margin-bottom: 2rem; }
+.modal__title {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 800;
+  margin-bottom: 0.4rem;
+}
+.modal__sub { color: var(--text-muted); font-size: 0.9rem; }
+.modal__switch { text-align: center; margin-top: 1.25rem; font-size: 0.875rem; color: var(--text-muted); }
+.modal__switch a { color: var(--accent); text-decoration: none; }
+.modal__switch a:hover { text-decoration: underline; }
+
+/* ── FORMS ──────────────────────────────────────────────── */
+.form__group { margin-bottom: 1.2rem; }
+.form__label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--text-muted); }
+.form__input {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.7rem 1rem; color: var(--text);
+  font-family: var(--font-body); font-size: 0.95rem; outline: none;
+  transition: border-color 0.2s;
+}
+.form__input:focus { border-color: var(--accent); }
+.form__input::placeholder { color: var(--text-muted); opacity: 0.6; }
+.form__error {
+  font-size: 0.83rem; color: var(--red); margin-bottom: 1rem;
+  min-height: 1rem;
+}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 300;
+  background: var(--bg-3); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.9rem 1.5rem; font-size: 0.9rem;
+  box-shadow: var(--shadow);
+  transform: translateY(20px); opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none; max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--border-2); color: var(--accent); }
+.toast.error { border-color: rgba(255,95,95,0.4); color: var(--red); }
+
+/* ── FOOTER ─────────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid var(--border); padding: 2rem 2.5rem;
+  background: var(--bg);
+}
+.footer__inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer__brand { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); font-weight: 700; }
+.footer__copy { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero { flex-direction: column; padding-top: 7rem; }
+  .hero__visual { flex: none; width: 100%; max-width: 420px; align-self: center; }
+  .translate__panel { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .nav { padding: 0.85rem 1.25rem; }
+  .hero { padding: 6rem 1.25rem 3rem; }
+  .translate, .history { padding: 3.5rem 1.25rem; }
+  .hero__stats { gap: 1rem; flex-wrap: wrap; }
+  .history__header { flex-direction: column; align-items: flex-start; }
+  .footer__inner { flex-direction: column; text-align: center; }
+}
+
+/* ── CAMERA STYLES ──────────────────────────────────────── */
+.camera__wrapper {
+  position: relative; width: 100%; aspect-ratio: 4/3;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  min-height: 220px;
+}
+.camera__placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--text-muted); text-align: center; gap: 0.5rem;
+  padding: 1rem;
+}
+.camera__placeholder-icon { font-size: 2.5rem; }
+.camera__placeholder-sub { font-size: 0.78rem; opacity: 0.7; }
+#cameraVideo { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); }
+#cameraCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+.camera__controls {
+  display: flex; gap: 0.6rem; flex-wrap: wrap;
+}
+.camera__status {
+  padding: 0.5rem 0.85rem; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 500;
+}
+.camera__status--idle    { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+.camera__status--loading { background: rgba(255,209,102,0.1); color: var(--yellow); border: 1px solid rgba(255,209,102,0.3); }
+.camera__status--success { background: rgba(61,214,192,0.1); color: var(--accent); border: 1px solid var(--border-2); }
+.camera__status--error   { background: rgba(255,95,95,0.1); color: var(--red); border: 1px solid rgba(255,95,95,0.3); }
+
+.camera__detected, .camera__sentence {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 0.85rem; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 8px;
+  font-size: 0.85rem;
+}
+.camera__detected-label { color: var(--text-muted); white-space: nowrap; }
+.camera__detected-value {
+  font-family: var(--font-display); font-size: 1.1rem;
+  font-weight: 700; color: var(--accent);
+}
+.camera__sentence-text { color: var(--text); font-style: italic; }
+
+.camera__guide {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.75rem;
+}
+.camera__guide summary {
+  cursor: pointer; font-size: 0.85rem; color: var(--text-muted);
+  font-weight: 500; user-select: none;
+}
+.camera__guide-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.4rem; margin-top: 0.75rem;
+}
+.camera__guide-item {
+  display: flex; justify-content: space-between;
+  font-size: 0.78rem; padding: 0.3rem 0.5rem;
+  background: var(--bg-3); border-radius: 6px;
+  color: var(--text-muted);
+}
+.camera__guide-item span:last-child { color: var(--accent); font-weight: 600; }
+
+.camera__howto {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  margin-top: 0.5rem;
+}
+.camera__howto h4 {
+  font-family: var(--font-display); font-size: 0.9rem;
+  margin-bottom: 0.75rem; color: var(--accent);
+}
+.camera__howto ol {
+  padding-left: 1.2rem; display: flex;
+  flex-direction: column; gap: 0.4rem;
+}
+.camera__howto li { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+.camera__howto strong { color: var(--text); }
+
+</style>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <nav class="nav" id="navbar">
+    <div class="nav__logo">
+      <span class="nav__logo-icon">✋</span>
+      <span class="nav__logo-text">SignBridge</span>
+    </div>
+    <div class="nav__links" id="navLinks">
+      <a href="#home" class="nav__link active">Home</a>
+      <a href="#translate" class="nav__link">Translate</a>
+      <a href="#history" class="nav__link" id="historyNavLink" style="display:none">History</a>
+    </div>
+    <div class="nav__auth" id="navAuth">
+      <button class="btn btn--ghost" onclick="showModal('login')">Login</button>
+      <button class="btn btn--primary" onclick="showModal('register')">Get Started</button>
+    </div>
+    <div class="nav__user" id="navUser" style="display:none">
+      <span class="nav__username" id="navUsername"></span>
+      <button class="btn btn--ghost btn--sm" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <section class="hero" id="home">
+    <div class="hero__bg">
+      <div class="hero__orb hero__orb--1"></div>
+      <div class="hero__orb hero__orb--2"></div>
+      <div class="hero__orb hero__orb--3"></div>
+      <div class="hero__grid"></div>
+    </div>
+    <div class="hero__content">
+      <div class="hero__badge">AI-Powered Translation</div>
+      <h1 class="hero__title">
+        Breaking the<br/>
+        <span class="hero__title-accent">silence barrier</span><br/>
+        one sign at a time
+      </h1>
+      <p class="hero__sub">Real-time sign language interpretation using your webcam and Google MediaPipe AI. Supporting ASL, BSL, ISL, JSL and more.</p>
+      <div class="hero__cta">
+        <button class="btn btn--primary btn--lg" onclick="document.getElementById('translate').scrollIntoView({behavior:'smooth'})">
+          Start Translating
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="btn btn--outline btn--lg" onclick="showModal('register')">Create Account</button>
+      </div>
+      <div class="hero__stats">
+        <div class="hero__stat"><span class="hero__stat-num">4+</span><span class="hero__stat-label">Sign Languages</span></div>
+        <div class="hero__stat-divider"></div>
+        <div class="hero__stat"><span class="hero__stat-num">Real-Time</span><span class="hero__stat-label">Processing</span></div>
+        <div class="hero__stat-divider"></div>
+        <div class="hero__stat"><span class="hero__stat-num">AI</span><span class="hero__stat-label">Powered Engine</span></div>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <div class="hero__card hero__card--main">
+        <div class="hero__card-header">
+          <span class="hero__card-dot hero__card-dot--red"></span>
+          <span class="hero__card-dot hero__card-dot--yellow"></span>
+          <span class="hero__card-dot hero__card-dot--green"></span>
+          <span class="hero__card-label">Live Translation</span>
+        </div>
+        <div class="hero__card-video">
+          <div class="hero__card-video-inner">
+            <div class="hero__scan-line"></div>
+            <div class="hero__hand-icon">🤟</div>
+            <div class="hero__detection-box"></div>
+          </div>
+        </div>
+        <div class="hero__card-output">
+          <span class="hero__card-output-label">Detected:</span>
+          <span class="hero__card-output-text" id="heroOutput">Hello, how are you?</span>
+        </div>
+        <div class="hero__card-lang">
+          <span class="hero__lang-pill">ASL</span>
+          <span class="hero__confidence">Confidence: 97%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRANSLATE SECTION -->
+  <section class="translate" id="translate">
+    <div class="translate__container">
+      <div class="translate__header">
+        <h2 class="translate__title">Translation Console</h2>
+        <p class="translate__sub">Point your webcam at your hand — AI detects your gestures in real-time</p>
+      </div>
+
+      <div class="translate__panel">
+
+        <!-- LEFT: Camera Panel -->
+        <div class="translate__input-panel">
+          <div class="translate__panel-header">
+            <span class="translate__panel-title">📷 Live Camera</span>
+            <div class="translate__lang-select">
+              <label>Language:</label>
+              <select id="sourceLang" class="translate__select">
+                <option value="ASL">ASL — American</option>
+                <option value="BSL">BSL — British</option>
+                <option value="ISL" selected>ISL — Indian</option>
+                <option value="JSL">JSL — Japanese</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Camera View Box -->
+          <div class="camera__wrapper">
+            <div class="camera__placeholder" id="cameraPlaceholder">
+              <div class="camera__placeholder-icon">📷</div>
+              <p>Click <strong>Start Camera</strong> below</p>
+              <p class="camera__placeholder-sub">Browser will ask for camera permission — click Allow</p>
+            </div>
+            <video id="cameraVideo" autoplay muted playsinline style="display:none; width:100%; border-radius:10px;"></video>
+            <canvas id="cameraCanvas" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
+          </div>
+
+          <!-- Buttons -->
+          <div class="camera__controls">
+            <button class="btn btn--primary" id="startCameraBtn">
+              ▶ Start Camera
+            </button>
+            <button class="btn btn--ghost" id="stopCameraBtn" style="display:none">
+              ⏹ Stop
+            </button>
+            <button class="btn btn--outline" id="clearCameraBtn">
+              🗑 Clear
+            </button>
+          </div>
+
+          <!-- Status message -->
+          <div class="camera__status camera__status--idle" id="cameraStatus">
+            Click "Start Camera" to begin
+          </div>
+
+          <!-- Current detected gesture -->
+          <div class="camera__detected">
+            <span class="camera__detected-label">Current gesture:</span>
+            <span class="camera__detected-value" id="detectedGesture">—</span>
+          </div>
+
+          <!-- Building sentence -->
+          <div class="camera__sentence">
+            <span class="camera__detected-label">Building sentence:</span>
+            <span class="camera__sentence-text" id="detectedSentence">—</span>
+          </div>
+
+          <!-- Gesture Guide -->
+          <details class="camera__guide">
+            <summary>📖 Show Gesture Guide</summary>
+            <div class="camera__guide-grid">
+              <div class="camera__guide-item"><span>✋ Open hand</span><span>Hello</span></div>
+              <div class="camera__guide-item"><span>✊ Fist</span><span>Yes</span></div>
+              <div class="camera__guide-item"><span>👍 Thumb up</span><span>Good</span></div>
+              <div class="camera__guide-item"><span>✌️ Peace/V</span><span>Peace</span></div>
+              <div class="camera__guide-item"><span>👆 1 finger</span><span>I want</span></div>
+              <div class="camera__guide-item"><span>👌 OK</span><span>OK</span></div>
+              <div class="camera__guide-item"><span>🤙 Call me</span><span>Call me</span></div>
+              <div class="camera__guide-item"><span>🤟 ILY</span><span>I Love You</span></div>
+              <div class="camera__guide-item"><span>🤘 Rock</span><span>Rock</span></div>
+              <div class="camera__guide-item"><span>4 fingers</span><span>Four</span></div>
+            </div>
+          </details>
+
+          <div class="translate__confidence-row">
+            <label>Confidence:</label>
+            <input type="range" id="confidenceSlider" min="0" max="1" step="0.01" value="0.95" class="translate__slider" oninput="document.getElementById('confidenceVal').textContent = parseFloat(this.value).toFixed(2)" />
+            <span id="confidenceVal">0.95</span>
+          </div>
+        </div>
+
+        <!-- RIGHT: Output Panel -->
+        <div class="translate__output-panel">
+          <div class="translate__panel-header">
+            <span class="translate__panel-title">Translated Text Output</span>
+            <button class="btn btn--ghost btn--sm" onclick="clearTranslation()">Clear</button>
+          </div>
+
+          <textarea
+            id="translationTextarea"
+            class="translate__textarea"
+            placeholder="Detected gestures appear here automatically...&#10;&#10;You can also type text directly."
+            rows="8"
+          ></textarea>
+
+          <div class="translate__actions">
+            <button class="btn btn--primary translate__save-btn" id="saveBtn" onclick="saveTranslation()">
+              💾 Save Translation
+            </button>
+            <button class="btn btn--outline" onclick="speakText()">
+              🔊 Speak
+            </button>
+          </div>
+
+          <div class="translate__alert" id="translateAlert"></div>
+
+          <!-- How it works -->
+          <div class="camera__howto">
+            <h4>⚡ How to use</h4>
+            <ol>
+              <li>Click <strong>Start Camera</strong> → click <strong>Allow</strong></li>
+              <li>Hold your hand in front of camera</li>
+              <li>Make a gesture from the guide on the left</li>
+              <li>Hold it steady for ~1 second</li>
+              <li>Word appears in the text box automatically</li>
+              <li>Click <strong>Save Translation</strong> to save it</li>
+              <li>Click <strong>🔊 Speak</strong> to hear it read aloud</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORY SECTION -->
+  <section class="history" id="history">
+    <div class="history__container">
+      <div class="history__header">
+        <h2 class="history__title">Translation History</h2>
+        <div class="history__filters">
+          <select id="historyLangFilter" class="translate__select" onchange="loadHistory()">
+            <option value="">All Languages</option>
+            <option value="ASL">ASL</option>
+            <option value="BSL">BSL</option>
+            <option value="ISL">ISL</option>
+            <option value="JSL">JSL</option>
+            <option value="OTHER">Other</option>
+          </select>
+          <button class="btn btn--ghost btn--sm" onclick="loadHistory()">🔄 Refresh</button>
+        </div>
+      </div>
+      <div class="history__login-prompt" id="historyLoginPrompt">
+        <div class="history__lock-icon">🔒</div>
+        <p>Login to view your translation history</p>
+        <button class="btn btn--primary" onclick="showModal('login')">Login Now</button>
+      </div>
+      <div class="history__list" id="historyList" style="display:none"></div>
+      <div class="history__empty" id="historyEmpty" style="display:none">
+        <span>📝</span><p>No translations yet. Start translating!</p>
+      </div>
+      <div class="history__pagination" id="historyPagination"></div>
+    </div>
+  </section>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal" id="modal" onclick="event.stopPropagation()">
+      <button class="modal__close" onclick="closeModal()">✕</button>
+      <div id="registerForm">
+        <div class="modal__header">
+          <h3 class="modal__title">Create Account</h3>
+          <p class="modal__sub">Join SignBridge today</p>
+        </div>
+        <div class="form__group">
+          <label class="form__label">Full Name</label>
+          <input type="text" id="regName" class="form__input" placeholder="Jane Doe" />
+        </div>
+        <div class="form__group">
+          <label class="form__label">Email</label>
+          <input type="email" id="regEmail" class="form__input" placeholder="jane@example.com" />
+        </div>
+        <div class="form__group">
+          <label class="form__label">Password</label>
+          <input type="password" id="regPassword" class="form__input" placeholder="Min 6 chars, include a number" />
+        </div>
+        <div class="form__error" id="regError"></div>
+        <button class="btn btn--primary btn--full" onclick="register()">Create Account</button>
+        <p class="modal__switch">Already have an account? <a href="#" onclick="showModal('login')">Login</a></p>
+      </div>
+      <div id="loginForm" style="display:none">
+        <div class="modal__header">
+          <h3 class="modal__title">Welcome Back</h3>
+          <p class="modal__sub">Sign in to your account</p>
+        </div>
+        <div class="form__group">
+          <label class="form__label">Email</label>
+          <input type="email" id="loginEmail" class="form__input" placeholder="jane@example.com" />
+        </div>
+        <div class="form__group">
+          <label class="form__label">Password</label>
+          <input type="password" id="loginPassword" class="form__input" placeholder="Your password" />
+        </div>
+        <div class="form__error" id="loginError"></div>
+        <button class="btn btn--primary btn--full" onclick="login()">Login</button>
+        <p class="modal__switch">Don't have an account? <a href="#" onclick="showModal('register')">Register</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__brand"><span>✋</span><span>SignBridge</span></div>
+      <p class="footer__copy">Real-Time Sign Language Translation · Powered by Google MediaPipe AI</p>
+    </div>
+  </footer>
+
+  <script>
+// js/api.js — All backend API calls
+
+const API_BASE = 'http://localhost:5000'; // Change to your deployed backend URL
+
+const api = {
+  // ── Auth helpers ───────────────────────────────────────────────
+  getToken: () => localStorage.getItem('signbridge_token'),
+  setToken: (t) => localStorage.setItem('signbridge_token', t),
+  setUser:  (u) => localStorage.setItem('signbridge_user', JSON.stringify(u)),
+  getUser:  ()  => {
+    try { return JSON.parse(localStorage.getItem('signbridge_user')); } catch { return null; }
+  },
+  clearAuth: () => {
+    localStorage.removeItem('signbridge_token');
+    localStorage.removeItem('signbridge_user');
+  },
+
+  // ── Base request ───────────────────────────────────────────────
+  async request(path, options = {}) {
+    const token = api.getToken();
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    const data = await res.json();
+
+    if (!res.ok) {
+      const msg = data.errors
+        ? data.errors.map(e => e.message).join(', ')
+        : data.message || 'An error occurred';
+      throw new Error(msg);
+    }
+    return data;
+  },
+
+  // ── User endpoints ─────────────────────────────────────────────
+  register(name, email, password) {
+    return api.request('/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    });
+  },
+
+  login(email, password) {
+    return api.request('/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  },
+
+  // ── Translation endpoints ──────────────────────────────────────
+  saveTranslation(translatedText, sourceLanguage, confidence) {
+    return api.request('/save-translation', {
+      method: 'POST',
+      body: JSON.stringify({ translatedText, sourceLanguage, confidence }),
+    });
+  },
+
+  getHistory(page = 1, limit = 10, lang = '') {
+    const params = new URLSearchParams({ page, limit });
+    if (lang) params.set('lang', lang);
+    return api.request(`/history?${params}`);
+  },
+
+  deleteTranslation(id) {
+    return api.request(`/history/${id}`, { method: 'DELETE' });
+  },
+};
+
+</script>
+  <script>
+// js/camera.js — Real-time hand gesture detection using MediaPipe
+
+// ── ASL Alphabet mapping (simplified finger-based detection) ──────────────────
+// Maps detected hand landmarks to letters using finger positions
+const GESTURE_MAP = {
+  'open_hand':      'Hello',
+  'fist':           'Yes',
+  'thumbs_up':      'Good',
+  'thumbs_down':    'No',
+  'peace':          'Peace / 2',
+  'pointing':       'I want / Point',
+  'ok_sign':        'OK / Perfect',
+  'call_me':        'Call me',
+  'rock':           'Rock / I love you (ILY)',
+  'three':          'Three',
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let camera         = null;
+let hands          = null;
+let isDetecting    = false;
+let detectedText   = '';
+let lastGesture    = '';
+let gestureBuffer  = [];
+let stream         = null;
+
+// ── DOM references ────────────────────────────────────────────────────────────
+const videoEl       = document.getElementById('cameraVideo');
+const canvasEl      = document.getElementById('cameraCanvas');
+const ctx           = canvasEl ? canvasEl.getContext('2d') : null;
+const startBtn      = document.getElementById('startCameraBtn');
+const stopBtn       = document.getElementById('stopCameraBtn');
+const clearBtn      = document.getElementById('clearCameraBtn');
+const detectedEl    = document.getElementById('detectedGesture');
+const sentenceEl    = document.getElementById('detectedSentence');
+const statusEl      = document.getElementById('cameraStatus');
+const placeholderEl = document.getElementById('cameraPlaceholder');
+
+// ── Load MediaPipe ────────────────────────────────────────────────────────────
+function loadMediaPipe() {
+  return new Promise((resolve) => {
+    if (window.Hands) { resolve(); return; }
+    const script1 = document.createElement('script');
+    script1.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
+    const script2 = document.createElement('script');
+    script2.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js';
+    const script3 = document.createElement('script');
+    script3.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js';
+    script3.onload = resolve;
+    document.head.appendChild(script1);
+    document.head.appendChild(script2);
+    document.head.appendChild(script3);
+  });
+}
+
+// ── Finger state helpers ──────────────────────────────────────────────────────
+function isFingerUp(landmarks, tipIdx, pipIdx) {
+  return landmarks[tipIdx].y < landmarks[pipIdx].y;
+}
+
+function getFingerStates(landmarks) {
+  // Returns [thumb, index, middle, ring, pinky] — true = up/extended
+  return [
+    landmarks[4].x < landmarks[3].x,                    // thumb (left hand logic simplified)
+    isFingerUp(landmarks, 8,  6),                        // index
+    isFingerUp(landmarks, 12, 10),                       // middle
+    isFingerUp(landmarks, 16, 14),                       // ring
+    isFingerUp(landmarks, 20, 18),                       // pinky
+  ];
+}
+
+// ── Gesture recognition ───────────────────────────────────────────────────────
+function recognizeGesture(landmarks) {
+  const [thumb, index, middle, ring, pinky] = getFingerStates(landmarks);
+  const upCount = [thumb, index, middle, ring, pinky].filter(Boolean).length;
+
+  // Open hand — all fingers up
+  if (thumb && index && middle && ring && pinky) return 'Hello';
+
+  // Fist — all fingers down
+  if (!thumb && !index && !middle && !ring && !pinky) return 'Yes';
+
+  // Thumbs up — only thumb up
+  if (thumb && !index && !middle && !ring && !pinky) return 'Good';
+
+  // Thumbs down — thumb down, rest curled (approximate)
+  if (!thumb && !index && !middle && !ring && !pinky) return 'No';
+
+  // Peace / V sign — index and middle up
+  if (!thumb && index && middle && !ring && !pinky) return 'Peace';
+
+  // Pointing — only index up
+  if (!thumb && index && !middle && !ring && !pinky) return 'I want';
+
+  // OK sign — thumb and index form circle (approximate: thumb + middle + ring + pinky up)
+  if (thumb && !index && middle && ring && pinky) return 'OK';
+
+  // Call me — thumb and pinky up
+  if (thumb && !index && !middle && !ring && pinky) return 'Call me';
+
+  // ILY / Rock — thumb, index, pinky up
+  if (thumb && index && !middle && !ring && pinky) return 'I Love You';
+
+  // Three fingers
+  if (!thumb && index && middle && ring && !pinky) return 'Three';
+
+  // Two fingers (index + pinky)
+  if (!thumb && index && !middle && !ring && pinky) return 'Two';
+
+  // Four fingers up
+  if (!thumb && index && middle && ring && pinky) return 'Four';
+
+  return null;
+}
+
+// ── Draw landmarks on canvas ──────────────────────────────────────────────────
+function drawLandmarks(results) {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+  ctx.drawImage(results.image, 0, 0, canvasEl.width, canvasEl.height);
+
+  if (results.multiHandLandmarks) {
+    for (const landmarks of results.multiHandLandmarks) {
+      // Draw connections
+      if (window.drawConnectors && window.HAND_CONNECTIONS) {
+        drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: '#3dd6c0', lineWidth: 2 });
+      }
+      // Draw dots
+      if (window.drawLandmarks) {
+        drawLandmarks(ctx, landmarks, { color: '#ffffff', lineWidth: 1, radius: 4 });
+      }
+    }
+  }
+}
+
+// ── Process results ───────────────────────────────────────────────────────────
+function onResults(results) {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+  ctx.save();
+  ctx.drawImage(results.image, 0, 0, canvasEl.width, canvasEl.height);
+
+  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+    for (const landmarks of results.multiHandLandmarks) {
+      // Draw skeleton
+      if (window.drawConnectors) {
+        window.drawConnectors(ctx, landmarks, window.HAND_CONNECTIONS,
+          { color: '#3dd6c0', lineWidth: 2 });
+      }
+      if (window.drawLandmarks) {
+        window.drawLandmarks(ctx, landmarks,
+          { color: '#fff', lineWidth: 1, radius: 3 });
+      }
+
+      // Recognize gesture
+      const gesture = recognizeGesture(landmarks);
+      if (gesture) {
+        gestureBuffer.push(gesture);
+        if (gestureBuffer.length > 8) gestureBuffer.shift();
+
+        // Stable gesture = same gesture 5 times in buffer
+        const stable = gestureBuffer.filter(g => g === gesture).length >= 5;
+        if (stable && gesture !== lastGesture) {
+          lastGesture = gesture;
+          if (detectedEl) detectedEl.textContent = gesture;
+          detectedText += (detectedText ? ' ' : '') + gesture;
+          if (sentenceEl) sentenceEl.textContent = detectedText;
+          // Auto-fill the translation textarea
+          const textarea = document.getElementById('translationTextarea');
+          if (textarea) textarea.value = detectedText;
+        }
+      }
+    }
+    setStatus('✅ Hand detected — keep signing!', 'success');
+  } else {
+    setStatus('👋 Show your hand to the camera', 'idle');
+    lastGesture = '';
+  }
+
+  ctx.restore();
+}
+
+// ── Start camera ──────────────────────────────────────────────────────────────
+async function startCamera() {
+  try {
+    setStatus('Loading AI model...', 'loading');
+
+    await loadMediaPipe();
+
+    // Wait for Hands to be available
+    await new Promise(r => setTimeout(r, 1000));
+
+    if (!window.Hands) {
+      setStatus('❌ Could not load MediaPipe. Check internet connection.', 'error');
+      return;
+    }
+
+    hands = new Hands({
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.5,
+    });
+
+    hands.onResults(onResults);
+
+    // Get webcam stream
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: 'user' }
+    });
+
+    videoEl.srcObject = stream;
+    videoEl.style.display = 'block';
+    canvasEl.style.display = 'block';
+    if (placeholderEl) placeholderEl.style.display = 'none';
+
+    canvasEl.width  = 640;
+    canvasEl.height = 480;
+
+    isDetecting = true;
+
+    // Process frames
+    videoEl.onloadedmetadata = async () => {
+      await videoEl.play();
+      processFrame();
+    };
+
+    if (startBtn) startBtn.style.display = 'none';
+    if (stopBtn)  stopBtn.style.display  = 'inline-flex';
+
+    setStatus('📷 Camera active — show your hand!', 'success');
+
+  } catch (err) {
+    if (err.name === 'NotAllowedError') {
+      setStatus('❌ Camera permission denied. Please allow camera access.', 'error');
+    } else {
+      setStatus('❌ Camera error: ' + err.message, 'error');
+    }
+    console.error('Camera error:', err);
+  }
+}
+
+// ── Process video frames ──────────────────────────────────────────────────────
+async function processFrame() {
+  if (!isDetecting || !hands) return;
+  if (videoEl.readyState >= 2) {
+    await hands.send({ image: videoEl });
+  }
+  requestAnimationFrame(processFrame);
+}
+
+// ── Stop camera ───────────────────────────────────────────────────────────────
+function stopCamera() {
+  isDetecting = false;
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  if (videoEl) { videoEl.srcObject = null; videoEl.style.display = 'none'; }
+  if (canvasEl) { canvasEl.style.display = 'none'; }
+  if (placeholderEl) placeholderEl.style.display = 'flex';
+  if (startBtn) startBtn.style.display = 'inline-flex';
+  if (stopBtn)  stopBtn.style.display  = 'none';
+  setStatus('Camera stopped.', 'idle');
+  gestureBuffer = [];
+  lastGesture   = '';
+}
+
+// ── Clear detected text ───────────────────────────────────────────────────────
+function clearDetected() {
+  detectedText = '';
+  lastGesture  = '';
+  gestureBuffer = [];
+  if (detectedEl) detectedEl.textContent = '—';
+  if (sentenceEl) sentenceEl.textContent = '';
+  const textarea = document.getElementById('translationTextarea');
+  if (textarea) textarea.value = '';
+}
+
+// ── Status helper ─────────────────────────────────────────────────────────────
+function setStatus(msg, type) {
+  if (!statusEl) return;
+  statusEl.textContent = msg;
+  statusEl.className = 'camera__status camera__status--' + type;
+}
+
+// ── Bind buttons ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (startBtn) startBtn.addEventListener('click', startCamera);
+  if (stopBtn)  stopBtn.addEventListener('click', stopCamera);
+  if (clearBtn) clearBtn.addEventListener('click', clearDetected);
+});
+
+</script>
+  <script>
+// js/app.js — UI logic & state management
+
+// ── State ────────────────────────────────────────────────────────
+let currentPage = 1;
+const HISTORY_PAGE_SIZE = 10;
+
+// ── On Load ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initAuth();
+  animateHeroOutput();
+  highlightNavOnScroll();
+});
+
+// ── Auth state ───────────────────────────────────────────────────
+function initAuth() {
+  const user = api.getUser();
+  const token = api.getToken();
+  if (user && token) {
+    setLoggedInUI(user);
+    loadHistory();
+  }
+}
+
+function setLoggedInUI(user) {
+  document.getElementById('navAuth').style.display = 'none';
+  document.getElementById('navUser').style.display = 'flex';
+  document.getElementById('navUsername').textContent = user.name || user.email;
+  document.getElementById('historyNavLink').style.display = '';
+  document.getElementById('historyLoginPrompt').style.display = 'none';
+  document.getElementById('historyList').style.display = 'flex';
+}
+
+function setLoggedOutUI() {
+  document.getElementById('navAuth').style.display = 'flex';
+  document.getElementById('navUser').style.display = 'none';
+  document.getElementById('historyNavLink').style.display = 'none';
+  document.getElementById('historyLoginPrompt').style.display = 'block';
+  document.getElementById('historyList').style.display = 'none';
+  document.getElementById('historyList').innerHTML = '';
+  document.getElementById('historyEmpty').style.display = 'none';
+  document.getElementById('historyPagination').innerHTML = '';
+}
+
+// ── Modal ────────────────────────────────────────────────────────
+function showModal(type) {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('registerForm').style.display = type === 'register' ? 'block' : 'none';
+  document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
+  document.getElementById('regError').textContent = '';
+  document.getElementById('loginError').textContent = '';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── Register ─────────────────────────────────────────────────────
+async function register() {
+  const name     = document.getElementById('regName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const errEl    = document.getElementById('regError');
+  errEl.textContent = '';
+
+  if (!name || !email || !password) {
+    errEl.textContent = 'All fields are required.';
+    return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  try {
+    const { data } = await api.register(name, email, password);
+    api.setToken(data.token);
+    api.setUser(data.user);
+    closeModal();
+    setLoggedInUI(data.user);
+    showToast('Account created! Welcome to SignBridge 🎉', 'success');
+    loadHistory();
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+
+// ── Login ────────────────────────────────────────────────────────
+async function login() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  if (!email || !password) {
+    errEl.textContent = 'Email and password are required.';
+    return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Logging in…';
+
+  try {
+    const { data } = await api.login(email, password);
+    api.setToken(data.token);
+    api.setUser(data.user);
+    closeModal();
+    setLoggedInUI(data.user);
+    showToast(`Welcome back, ${data.user.name}!`, 'success');
+    loadHistory();
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Login';
+  }
+}
+
+// ── Logout ───────────────────────────────────────────────────────
+function logout() {
+  api.clearAuth();
+  setLoggedOutUI();
+  showToast('Logged out successfully.', 'success');
+}
+
+// ── Save Translation ─────────────────────────────────────────────
+async function saveTranslation() {
+  const token = api.getToken();
+  if (!token) {
+    showModal('login');
+    return;
+  }
+
+  const text       = document.getElementById('translationTextarea').value.trim();
+  const lang       = document.getElementById('sourceLang').value;
+  const confidence = parseFloat(document.getElementById('confidenceSlider').value);
+  const alertEl    = document.getElementById('translateAlert');
+  alertEl.className = 'translate__alert';
+  alertEl.style.display = 'none';
+
+  if (!text) {
+    alertEl.textContent = 'Please enter some translated text first.';
+    alertEl.className = 'translate__alert error';
+    return;
+  }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.innerHTML = '<span>Saving…</span>';
+
+  try {
+    await api.saveTranslation(text, lang, confidence);
+    alertEl.textContent = '✓ Translation saved to your history!';
+    alertEl.className = 'translate__alert success';
+    document.getElementById('translationTextarea').value = '';
+    currentPage = 1;
+    loadHistory();
+    showToast('Translation saved!', 'success');
+  } catch (err) {
+    alertEl.textContent = err.message;
+    alertEl.className = 'translate__alert error';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg> Save Translation`;
+  }
+}
+
+function clearTranslation() {
+  document.getElementById('translationTextarea').value = '';
+  const alertEl = document.getElementById('translateAlert');
+  alertEl.className = 'translate__alert';
+  alertEl.style.display = 'none';
+}
+
+// ── Text to Speech ───────────────────────────────────────────────
+function speakText() {
+  const text = document.getElementById('translationTextarea').value.trim();
+  if (!text) { showToast('No text to speak!', 'error'); return; }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.9; utt.pitch = 1;
+    window.speechSynthesis.speak(utt);
+    showToast('Speaking…', 'success');
+  } else {
+    showToast('Text-to-speech not supported in this browser.', 'error');
+  }
+}
+
+// ── History ──────────────────────────────────────────────────────
+async function loadHistory() {
+  if (!api.getToken()) return;
+
+  const lang    = document.getElementById('historyLangFilter').value;
+  const listEl  = document.getElementById('historyList');
+  const emptyEl = document.getElementById('historyEmpty');
+  const pagEl   = document.getElementById('historyPagination');
+
+  listEl.innerHTML = '<div style="padding:2rem;color:var(--text-muted);text-align:center;">Loading…</div>';
+  listEl.style.display = 'flex';
+  emptyEl.style.display = 'none';
+  pagEl.innerHTML = '';
+
+  try {
+    const { data } = await api.getHistory(currentPage, HISTORY_PAGE_SIZE, lang);
+    const { translations, pagination } = data;
+
+    listEl.innerHTML = '';
+
+    if (!translations.length) {
+      listEl.style.display = 'none';
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    translations.forEach((t, i) => {
+      const item = document.createElement('div');
+      item.className = 'history__item';
+      item.style.animationDelay = `${i * 0.05}s`;
+      item.innerHTML = `
+        <div class="history__item-icon">🤟</div>
+        <div class="history__item-body">
+          <div class="history__item-text">${escapeHtml(t.translatedText)}</div>
+          <div class="history__item-meta">
+            <span class="history__item-lang">${t.sourceLanguage || 'ASL'}</span>
+            <span class="history__item-time">${formatDate(t.timestamp)}</span>
+            ${t.confidence != null ? `<span class="history__item-confidence">Conf: ${(t.confidence * 100).toFixed(0)}%</span>` : ''}
+          </div>
+        </div>
+        <div class="history__item-actions">
+          <button class="history__delete-btn" onclick="deleteTranslation('${t._id}')" title="Delete">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      `;
+      listEl.appendChild(item);
+    });
+
+    // Pagination
+    if (pagination.totalPages > 1) {
+      for (let p = 1; p <= pagination.totalPages; p++) {
+        const btn = document.createElement('button');
+        btn.className = `history__page-btn${p === currentPage ? ' active' : ''}`;
+        btn.textContent = p;
+        btn.onclick = () => { currentPage = p; loadHistory(); };
+        pagEl.appendChild(btn);
+      }
+    }
+  } catch (err) {
+    listEl.innerHTML = `<div style="padding:2rem;color:var(--red);text-align:center;">${err.message}</div>`;
+    if (err.message.includes('expired') || err.message.includes('token')) {
+      api.clearAuth(); setLoggedOutUI();
+    }
+  }
+}
+
+async function deleteTranslation(id) {
+  if (!confirm('Delete this translation?')) return;
+  try {
+    await api.deleteTranslation(id);
+    showToast('Translation deleted.', 'success');
+    loadHistory();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// ── Utilities ────────────────────────────────────────────────────
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = `toast ${type} show`;
+  setTimeout(() => { toast.className = 'toast'; }, 3500);
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+         ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+// ── Hero cycling text ─────────────────────────────────────────────
+function animateHeroOutput() {
+  const phrases = [
+    'Hello, how are you?',
+    'Nice to meet you.',
+    'I need help.',
+    'Thank you very much!',
+    'Where is the bathroom?',
+    'I love you.',
+    'Please speak slowly.',
+  ];
+  let i = 0;
+  const el = document.getElementById('heroOutput');
+  if (!el) return;
+  setInterval(() => {
+    i = (i + 1) % phrases.length;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.textContent = phrases[i];
+      el.style.transition = 'opacity 0.4s';
+      el.style.opacity = '1';
+    }, 300);
+  }, 2800);
+}
+
+// ── Active nav on scroll ──────────────────────────────────────────
+function highlightNavOnScroll() {
+  const sections = document.querySelectorAll('section[id]');
+  const links    = document.querySelectorAll('.nav__link');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    links.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+  }, { passive: true });
+}
+
+</script>
+</body>
+</html>
