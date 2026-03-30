@@ -72,6 +72,10 @@ app.get("/health", (req, res) => {
     environment: process.env.NODE_ENV || "development",
   });
 });
+// ✅ Public root route (ADD THIS)
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
 
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use("/api/v1", authLimiter, userRoutes);         // /api/v1/register  /api/v1/login
