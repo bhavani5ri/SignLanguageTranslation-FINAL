@@ -1,6 +1,7 @@
 // js/api.js — All backend API calls
 
-const API_BASE = 'http://localhost:5000'; // Change to your deployed backend URL
+const API_BASE = 'https://signlanguagetranslation-final.onrender.com'; // Change to your deployed backend URL
+ // Change to your deployed backend URL
 
 const api = {
   // ── Auth helpers ───────────────────────────────────────────────
